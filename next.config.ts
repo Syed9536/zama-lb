@@ -1,7 +1,11 @@
+// next.config.ts
+
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // IMPORTANT:
+  // - Yaha koi `distDir` mat rakhna
+  // - Vercel default `.next` hi use karega
 };
 
 export default nextConfig;
