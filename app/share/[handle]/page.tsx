@@ -1,61 +1,97 @@
-import { ImageResponse } from "next/og";
+// app/share/[handle]/page.tsx
+import type { Metadata } from "next";
 
-export const runtime = "edge";
+type SharePageProps = {
+  params: { handle: string };
+  searchParams: { rank?: string };
+};
 
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
+export async function generateMetadata(
+  { params, searchParams }: SharePageProps
+): Promise<Metadata> {
+  const handle = params.handle;
+  const rank = searchParams.rank;
 
-  const username = searchParams.get("username") || "Unknown";
-  const rank = searchParams.get("rank") || "N/A";
-  const reward = searchParams.get("reward") || "0";
-  const top = searchParams.get("top") || "—";
+  const base =
+    process.env.NEXT_PUBLIC_BASE_URL ?? "https://zama-lb.vercel.app";
 
-  return new ImageResponse(
-    (
-      <div
-        style={{
-          width: "1200px",
-          height: "630px",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          padding: "40px",
-          background: "linear-gradient(135deg, #020617, #1e293b)",
-          color: "white",
-          fontFamily: "sans-serif",
-          border: "20px solid #fbbf24",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "20px" }}>
-           <h1 style={{ fontSize: 60, fontWeight: 900, background: "linear-gradient(90deg,#fbbf24,#f472b6,#38bdf8)", backgroundClip: "text", color: "transparent", margin: 0 }}>
-             Zama Rank
-           </h1>
-        </div>
+  const title = `Zama Rank — @${handle}`;
+  const desc = rank
+    ? `Unofficial Zama All SZN Rank. @${handle} is currently #${rank} on SZN 5 (speculative).`
+    : `Unofficial Zama All SZN Rank dashboard. Check your placement & speculative rewards.`;
 
-        <div style={{ fontSize: 40, color: "#94a3b8" }}>@{username}</div>
+  const shareUrl = `${base}/share/${encodeURIComponent(handle)}${
+    rank ? `?rank=${rank}` : ""
+  }`;
 
-        <div style={{ display: "flex", gap: "40px", marginTop: "40px" }}>
-           <div style={{ display: "flex", flexDirection: "column" }}>
-              <span style={{ fontSize: 24, color: "#64748b", textTransform: "uppercase", letterSpacing: "2px" }}>Rank</span>
-              <span style={{ fontSize: 80, fontWeight: 900, color: "#fbbf24" }}>#{rank}</span>
-           </div>
-           
-           {reward !== "0" && (
-             <div style={{ display: "flex", flexDirection: "column" }}>
-                <span style={{ fontSize: 24, color: "#64748b", textTransform: "uppercase", letterSpacing: "2px" }}>Reward</span>
-                <span style={{ fontSize: 80, fontWeight: 900, color: "#34d399" }}>${reward}</span>
-             </div>
-           )}
-        </div>
+  const imageUrl = `${base}/api/share-card?username=${encodeURIComponent(
+    handle,
+  )}${rank ? `&rank=${rank}` : ""}`;
 
-        <div style={{ position: "absolute", bottom: "40px", right: "40px", fontSize: 20, color: "#475569" }}>
-           Check yours at zamarank.live
+  return {
+    title,
+    description: desc,
+    openGraph: {
+      title,
+      description: desc,
+      url: shareUrl,
+      siteName: "Zama Rank — Unofficial",
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: `Zama Rank share card for @${handle}`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: desc,
+      images: [imageUrl],
+    },
+  };
+}
+
+// ✅ Yeh default export hi missing tha – error isi wajah se aa raha tha
+export default function SharePage({ params, searchParams }: SharePageProps) {
+  const handle = params.handle;
+  const rank = searchParams.rank;
+
+  return (
+    <main className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-100">
+      <div className="max-w-xl w-full text-center px-4">
+        <h1 className="text-xl font-semibold mb-2">
+          Zama Rank — Share Preview
+        </h1>
+        <p className="text-sm text-slate-400 mb-4">
+          This link is mainly for X / social previews.
+        </p>
+
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 px-4 py-4 text-sm space-y-3">
+          <div>
+            <div className="text-[11px] text-slate-500 uppercase tracking-[0.2em]">
+              Handle
+            </div>
+            <div className="text-lg font-semibold">@{handle}</div>
+          </div>
+
+          {rank && (
+            <div>
+              <div className="text-[11px] text-slate-500 uppercase tracking-[0.2em]">
+                Rank (SZN 5 snapshot)
+              </div>
+              <div className="text-lg font-semibold">#{rank}</div>
+            </div>
+          )}
+
+          <p className="text-[11px] text-slate-500 pt-2">
+            When someone shares their rank from the dashboard, X will use the
+            OpenGraph / Twitter image attached to this URL.
+          </p>
         </div>
       </div>
-    ),
-    {
-      width: 1200,
-      height: 630,
-    }
+    </main>
   );
 }
