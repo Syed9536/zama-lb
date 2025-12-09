@@ -247,7 +247,7 @@ export default function HomePage() {
     // optional: agar data hi nahi hai to kuch mat karo
     if (!data) return;
 
-    const siteUrl = "https://zama-rank-next.vercel.app/";
+    const siteUrl = "https://zama-lb.vercel.app/";
 
     const text = [
       `Just checked my Zama SZN 5 Rank on ${siteUrl} 🚀`,
