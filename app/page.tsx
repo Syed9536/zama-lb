@@ -219,6 +219,12 @@ export default function HomePage() {
     0,
   );
 
+  // S1–S4 ke prize ko season-code se map karne ke liye
+  const historyPrizeMap: Record<string, number> = {};
+  historyPrizeBreakdown.forEach((row) => {
+    historyPrizeMap[row.season.toUpperCase()] = row.prize;
+  });
+
   // LIVE SZN 5 (24h / 7d / 30d) — best current rank
   const liveRanks: number[] = [];
 
@@ -294,18 +300,25 @@ export default function HomePage() {
 
       {/* top bar with branding */}
       <header className="relative z-10 flex items-center justify-between px-4 py-4 md:px-10">
-        <div className="flex items-center gap-2 text-xs md:text-sm text-slate-400">
-          <Image
-            src="/zama-logo.png"
-            alt="Zama Logo"
-            width={24}
-            height={24}
-            className="h-5 w-5"
-          />
+        <div className="flex items-center gap-2 text-xs md:text-sm text-slate-200">
+          <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900/90 border border-amber-400/70 shadow-[0_0_18px_rgba(251,191,36,0.7)]">
+            <Image
+              src="/zama-logo.png"
+              alt="Zama Logo"
+              width={20}
+              height={20}
+              className="h-4 w-4"
+            />
+          </div>
 
-          <span className="uppercase tracking-[0.2em] text-[10px] md:text-xs text-slate-400">
-            Zama Creator Dashboard
-          </span>
+          <div className="flex flex-col leading-tight">
+            <span className="uppercase tracking-[0.25em] text-[10px] md:text-[11px] text-slate-400">
+              Zama Creator Dashboard
+            </span>
+            <span className="text-[11px] text-slate-500">
+              Unofficial All&nbsp;SZN Rank • Live Mindshare
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -315,22 +328,19 @@ export default function HomePage() {
             target="_blank"
             rel="noreferrer"
             className="
-    inline-flex items-center gap-1 rounded-full
-    px-3 py-1 text-xs font-medium
-
-    /* STATIC CYBERPUNK GLOW */
-    border border-[#ff2cdf]/60
-    bg-[#ff2cdf]/15
-    shadow-[0_0_18px_rgba(255,44,223,0.65)]
-    backdrop-blur-xl
-    text-[#ffbdf7]
-
-    /* HOVER: EXTREME NEON BLAST */
-    transition-all duration-300
-    hover:shadow-[0_0_30px_rgba(255,44,223,1)]
-    hover:border-[#ff2cdf]
-    hover:text-white
-  "
+              inline-flex cursor-pointer items-center gap-1 rounded-full
+              px-3 py-1 text-xs font-medium
+              border border-[#ff2cdf]/60
+              bg-[#ff2cdf]/15
+              shadow-[0_0_18px_rgba(255,44,223,0.65)]
+              backdrop-blur-xl
+              text-[#ffbdf7]
+              transition-all duration-300
+              hover:-translate-y-0.5
+              hover:shadow-[0_0_26px_rgba(255,44,223,1)]
+              hover:border-[#ff2cdf]
+              hover:text-white
+            "
           >
             <Image
               src="/x-logo.svg"
@@ -348,22 +358,19 @@ export default function HomePage() {
             target="_blank"
             rel="noreferrer"
             className="
-    inline-flex items-center gap-1 rounded-full
-    px-3 py-1 text-[11px] font-medium
-
-    /* STATIC YELLOW GLOW */
-    border border-[#fdfd96]/60
-    bg-[#fdfd96]/15
-    shadow-[0_0_18px_rgba(253,253,150,0.65)]
-    backdrop-blur-xl
-    text-[#fffbe0]
-
-    /* HOVER: SUPER BRIGHT GOLD GLOW */
-    transition-all duration-300
-    hover:shadow-[0_0_30px_rgba(253,253,150,1)]
-    hover:border-[#fdfd96]
-    hover:text-white
-  "
+              inline-flex cursor-pointer items-center gap-1 rounded-full
+              px-3 py-1 text-[11px] font-medium
+              border border-[#fdfd96]/60
+              bg-[#fdfd96]/15
+              shadow-[0_0_18px_rgba(253,253,150,0.65)]
+              backdrop-blur-xl
+              text-[#fffbe0]
+              transition-all duration-300
+              hover:-translate-y-0.5
+              hover:shadow-[0_0_26px_rgba(253,253,150,1)]
+              hover:border-[#fdfd96]
+              hover:text-white
+            "
           >
             <Image
               src="/zama-logo.png"
@@ -573,14 +580,14 @@ export default function HomePage() {
                             type="button"
                             onClick={handleShare}
                             className="
-      inline-flex items-center gap-1 rounded-full
-      px-2.5 py-0.5 text-[11px] font-medium
-      border border-sky-500/60 bg-sky-500/10
-      text-sky-300
-      hover:bg-sky-500/20 hover:border-sky-400 hover:text-white
-      transition-all
-      cursor-pointer
-    "
+                              inline-flex items-center gap-1 rounded-full
+                              px-2.5 py-0.5 text-[11px] font-medium
+                              border border-sky-500/60 bg-sky-500/10
+                              text-sky-300
+                              hover:bg-sky-500/20 hover:border-sky-400 hover:text-white
+                              transition-all
+                              cursor-pointer
+                            "
                           >
                             <Share2 className="w-3 h-3" />
                             Share on X
@@ -589,116 +596,192 @@ export default function HomePage() {
                       </div>
                     </div>
                     <div className="text-[11px] text-slate-500 text-right">
-                      Calculated from Zama's leaderboard
+                      Calculated from Zama&apos;s leaderboard
                     </div>
                   </div>
 
-                  {/* Rewards simulation (USDT) */}
+                  {/* 🔴 SEASON 5 LIVE BANNER */}
+                  <div
+                    className="
+                      group relative overflow-hidden rounded-2xl
+                      border border-emerald-500/60
+                      bg-gradient-to-r from-emerald-500/15 via-slate-950/80 to-cyan-500/15
+                      px-4 py-2.5 text-xs
+                      shadow-[0_0_40px_rgba(16,185,129,0.55)]
+                      transform-gpu transition-all duration-500
+                      hover:-translate-y-0.5 hover:shadow-[0_0_70px_rgba(16,185,129,0.9)]
+                    "
+                  >
+                    <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                      <div className="absolute -left-10 -top-6 h-24 w-24 bg-emerald-400/25 blur-3xl" />
+                      <div className="absolute right-[-30px] bottom-[-30px] h-28 w-40 bg-cyan-400/20 blur-3xl" />
+                    </div>
+
+                    <div className="relative z-10 flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-[11px] uppercase tracking-[0.22em] text-emerald-200/90">
+                          Season 5 • Live
+                        </div>
+                        <p className="text-[11px] text-slate-300">
+                          Ranks pulled in real-time from Zama&apos;s live SZN 5 leaderboard.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="relative flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500" />
+                        </span>
+                        <span className="text-[11px] font-semibold text-emerald-200">
+                          LIVE
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Rewards simulation (USDT) – PREMIUM TILT CARD */}
                   {(historyPrizeBreakdown.length > 0 ||
                     potentialSeason5Prize) && (
-                    <div className="border border-emerald-500/40 rounded-2xl bg-emerald-500/5 px-4 py-4 text-sm shadow-[0_0_24px_rgba(16,185,129,0.35)]">
-                      <div className="flex items-center justify-between mb-3">
-                        <div>
-                          <div className="text-[11px] uppercase tracking-[0.2em] text-emerald-300/80">
-                            Rewards (speculative)
-                          </div>
-                          <div className="text-xs text-slate-400">
-                            Prize pool per season assumed:{" "}
-                            <span className="text-emerald-300 font-semibold">
-                              ${PRIZE_POOL.toLocaleString()}
-                            </span>{" "}
-                            split across Top 100.
-                          </div>
-                        </div>
+                    <div
+                      className="
+                        group relative mt-1 overflow-hidden rounded-3xl
+                        border border-emerald-400/60
+                        bg-gradient-to-br from-emerald-500/12 via-emerald-500/5 to-transparent
+                        px-4 py-4 text-sm
+                        shadow-[0_0_40px_rgba(16,185,129,0.45)]
+                        transform-gpu transition-all duration-500
+                        hover:-translate-y-1 hover:shadow-[0_0_70px_rgba(16,185,129,0.9)]
+                        hover:rotate-[0.5deg]
+                        cursor-default
+                      "
+                    >
+                      {/* inner glow layers */}
+                      <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        <div className="absolute -left-16 -top-8 h-40 w-40 bg-emerald-400/20 blur-3xl" />
+                        <div className="absolute right-[-40px] bottom-[-40px] h-44 w-56 bg-amber-300/15 blur-3xl" />
                       </div>
 
-                      <div className="grid gap-3 md:grid-cols-2">
-                        {/* Historical Rewards (S1–S4) */}
-                        <div className="rounded-xl border border-emerald-400/30 bg-slate-950/60 px-3 py-3">
-                          <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-[11px] text-slate-400 uppercase tracking-[0.18em]">
-                              S1–S4 Earned
-                            </span>
-                            {totalHistoricalPrize > 0 && (
-                              <span className="text-xs text-emerald-300 font-semibold">
-                                ~${totalHistoricalPrize.toLocaleString()}
+                      <div className="relative z-10">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <div className="text-[11px] uppercase tracking-[0.2em] text-emerald-300/80">
+                              Rewards (speculative)
+                            </div>
+                            <div className="text-xs text-slate-300">
+                              Prize pool per season assumed:{" "}
+                              <span className="text-emerald-300 font-semibold">
+                                ${PRIZE_POOL.toLocaleString()}
+                              </span>{" "}
+                              split across Top 100.
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid gap-3 md:grid-cols-2">
+                          {/* Historical Rewards (S1–S4) */}
+                          <div className="rounded-xl border border-emerald-400/30 bg-slate-950/70 px-3 py-3">
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-[11px] text-slate-400 uppercase tracking-[0.18em]">
+                                S1–S4 Earned
                               </span>
+                              {totalHistoricalPrize > 0 && (
+                                <span className="text-xs text-emerald-300 font-semibold">
+                                  ~${totalHistoricalPrize.toLocaleString()}
+                                </span>
+                              )}
+                            </div>
+
+                            {historyPrizeBreakdown.length === 0 ? (
+                              <p className="text-[11px] text-slate-500">
+                                Not in Top 100 for Seasons 1–4.
+                              </p>
+                            ) : (
+                              <div className="space-y-1.5 text-[11px] text-slate-300">
+                                {historyPrizeBreakdown.map((row) => (
+                                  <div
+                                    key={row.season}
+                                    className="flex items-center justify-between"
+                                  >
+                                    <span>
+                                      {row.season} —{" "}
+                                      <span className="text-slate-400">
+                                        Rank
+                                      </span>{" "}
+                                      <span className="font-semibold">
+                                        #{row.rank}
+                                      </span>
+                                    </span>
+                                    <span className="text-emerald-300 font-medium">
+                                      ~${row.prize.toLocaleString()}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
                             )}
                           </div>
 
-                          {historyPrizeBreakdown.length === 0 ? (
-                            <p className="text-[11px] text-slate-500">
-                              Not in Top 100 for Seasons 1–4.
-                            </p>
-                          ) : (
-                            <div className="space-y-1.5 text-[11px] text-slate-300">
-                              {historyPrizeBreakdown.map((row) => (
-                                <div
-                                  key={row.season}
-                                  className="flex items-center justify-between"
-                                >
-                                  <span>
-                                    {row.season} —{" "}
-                                    <span className="text-slate-400">
-                                      Rank
-                                    </span>{" "}
-                                    <span className="font-semibold">
-                                      #{row.rank}
-                                    </span>
-                                  </span>
-                                  <span className="text-emerald-300 font-medium">
-                                    ~${row.prize.toLocaleString()}
-                                  </span>
+                          {/* Season 5 Potential Reward */}
+                          <div className="rounded-xl border border-amber-400/40 bg-slate-950/80 px-3 py-3">
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-[11px] text-slate-400 uppercase tracking-[0.18em]">
+                                SZN 5 Potential
+                              </span>
+                            </div>
+
+                            {bestLiveRank && potentialSeason5Prize ? (
+                              <div className="space-y-1.5">
+                                <p className="text-[11px] text-slate-300">
+                                  Best current rank:{" "}
+                                  <span className="font-semibold text-amber-300">
+                                    #{bestLiveRank}
+                                  </span>{" "}
+                                  in the live leaderboard.
+                                </p>
+                                <p className="text-[11px] text-slate-400">
+                                  If final rewards follow this split, your
+                                  estimated SZN 5 share could be:
+                                </p>
+                                <div className="mt-1 text-lg font-semibold text-amber-300">
+                                  ~${potentialSeason5Prize.toLocaleString()}
                                 </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Season 5 Potential Reward */}
-                        <div className="rounded-xl border border-amber-400/40 bg-slate-950/70 px-3 py-3">
-                          <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-[11px] text-slate-400 uppercase tracking-[0.18em]">
-                              SZN 5 Potential
-                            </span>
-                          </div>
-
-                          {bestLiveRank && potentialSeason5Prize ? (
-                            <div className="space-y-1.5">
-                              <p className="text-[11px] text-slate-300">
-                                Best current rank:{" "}
-                                <span className="font-semibold text-amber-300">
-                                  #{bestLiveRank}
-                                </span>{" "}
-                                in the live leaderboard.
-                              </p>
-                              <p className="text-[11px] text-slate-400">
-                                If final rewards follow this split, your
-                                estimated SZN 5 share could be:
-                              </p>
-                              <div className="mt-1 text-lg font-semibold text-amber-300">
-                                ~${potentialSeason5Prize.toLocaleString()}
                               </div>
-                            </div>
-                          ) : (
-                            <p className="text-[11px] text-slate-500">
-                              Not in Top 100 in current 24h / 7d / 30d
-                              snapshots.
-                            </p>
-                          )}
+                            ) : (
+                              <p className="text-[11px] text-slate-500">
+                                Not in Top 100 in current 24h / 7d / 30d snapshots.
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      </div>
 
-                      <p className="mt-3 text-[10px] text-slate-500">
-                        Disclaimer: This is a{" "}
-                        <span className="text-amber-300">speculative</span>{" "}
-                        reward model inspired by zamarank.live. Actual rewards
-                        are decided by Zama / official programs.
-                      </p>
+                        <p className="mt-3 text-[10px] text-slate-500">
+                          Disclaimer: This is a{" "}
+                          <span className="text-amber-300">speculative</span> reward
+                          model inspired by zamarank.live. Actual rewards are decided
+                          by Zama / official programs.
+                        </p>
+                      </div>
                     </div>
                   )}
 
-                  {/* timeframe cards */}
+                  {/* Season 5 leaderboard heading */}
+                  <div className="mt-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                        Season 5 Leaderboard
+                      </span>
+                      <span className="text-[11px] text-slate-500">
+                        (24h • 7d • 30d)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 text-[10px] text-emerald-300">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                      </span>
+                      <span>Live updates</span>
+                    </div>
+                  </div>
+
+                  {/* timeframe cards (Season 5 live snapshots) */}
                   <div className="grid md:grid-cols-3 gap-3">
                     <TimeframeCard label="24 Hours" data={data["24h"]} />
                     <TimeframeCard label="7 Days" data={data["7d"]} />
@@ -709,41 +792,102 @@ export default function HomePage() {
                     />
                   </div>
 
-                  {/* historical seasons */}
+                  {/* historical seasons S1–S4 */}
                   {history.length > 0 && (
-                    <div className="border border-slate-800 rounded-2xl bg-slate-900/80 px-4 py-3 text-sm">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="text-xs text-slate-400">
-                          Historical Seasons (rank only)
-                        </div>
-                        <div className="text-[10px] text-slate-500">
-                          Archived from S1–S4 winners
-                        </div>
+                    <div
+                      className="
+                        group relative mt-4 overflow-hidden rounded-3xl
+                        border border-slate-800 bg-slate-900/80 px-4 py-4 text-sm
+                        shadow-[0_0_32px_rgba(15,23,42,0.9)]
+                        transform-gpu transition-all duration-500
+                        hover:-translate-y-1 hover:shadow-[0_0_60px_rgba(15,23,42,1)]
+                      "
+                    >
+                      <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        <div className="absolute -left-10 -bottom-8 h-32 w-40 bg-slate-500/20 blur-3xl" />
                       </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                        {["S1", "S2", "S3", "S4"].map((season) => {
-                          const row = history.find(
-                            (h) => h.season.toUpperCase() === season,
-                          );
-                          const value =
-                            row && row.rank != null
-                              ? `#${row.rank}`
-                              : "Not ranked";
 
-                          return (
-                            <div
-                              key={season}
-                              className="rounded-xl border border-slate-700/80 bg-slate-950/90 px-3 py-2 flex flex-col gap-1 shadow-[0_0_20px_rgba(15,23,42,0.9)]"
-                            >
-                              <span className="text-[10px] text-slate-500">
-                                {season}
-                              </span>
-                              <span className="font-semibold text-sm">
-                                {value}
-                              </span>
+                      <div className="relative z-10">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex flex-col gap-0.5">
+                            <div className="text-[11px] text-slate-300 uppercase tracking-[0.2em]">
+                              Season 1–4 • Ended
                             </div>
-                          );
-                        })}
+                            <div className="text-[10px] text-slate-500">
+                              Archived rankings from early Zama seasons. Rewards already distributed.
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 text-[10px] text-slate-500">
+                            <span className="relative flex h-2 w-2">
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-slate-500" />
+                            </span>
+                            <span>Ended</span>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                          {["S1", "S2", "S3", "S4"].map((season) => {
+                            const row = history.find(
+                              (h) => h.season.toUpperCase() === season,
+                            );
+
+                            const hasRank =
+                              row && row.rank != null && row.rank > 0;
+
+                            // sirf Top 100 ke liye prize
+                            const prize = historyPrizeMap[season];
+                            const eligiblePrize =
+                              hasRank && row!.rank! <= 100 && prize != null;
+
+                            return (
+                              <div
+                                key={season}
+                                className="
+                                  group/item relative overflow-hidden
+                                  rounded-2xl border border-slate-700/80 bg-slate-950/90
+                                  px-3 py-2.5 flex flex-col gap-1.5
+                                  shadow-[0_0_20px_rgba(15,23,42,0.9)]
+                                  transform-gpu transition-all duration-300
+                                  hover:-translate-y-1 hover:-rotate-[0.6deg]
+                                  hover:shadow-[0_18px_40px_rgba(15,23,42,1)]
+                                "
+                              >
+                                <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.18),transparent_55%),radial-gradient(circle_at_bottom,_rgba(251,191,36,0.15),transparent_55%)]" />
+                                <div className="relative z-10">
+                                  {/* Season label */}
+                                  <span className="text-[10px] text-slate-500">
+                                    {season}
+                                  </span>
+
+                                  {/* Rank line – hamesha rank dikhayenge agar mila ho */}
+                                  <div className="flex items-baseline gap-1">
+                                    {hasRank ? (
+                                      <>
+                                        <span className="text-[10px] text-slate-400">
+                                          Rank
+                                        </span>
+                                        <span className="font-semibold text-sm">
+                                          #{row!.rank}
+                                        </span>
+                                      </>
+                                    ) : (
+                                      <span className="font-semibold text-sm">
+                                        Not ranked
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {/* Prize sirf Top 100 ke liye */}
+                                  {eligiblePrize && (
+                                    <span className="text-[10px] text-emerald-300/90">
+                                      Earned: ~${prize.toLocaleString()}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -783,7 +927,7 @@ export default function HomePage() {
                   Real-time Mindshare
                 </h3>
                 <p className="text-xs leading-relaxed text-slate-500">
-                  Live tracking of Zama's All Seasons Rank And Mindshare of Live
+                  Live tracking of Zama&apos;s All Seasons Rank And Mindshare of Live
                   Season.
                 </p>
               </div>
@@ -877,9 +1021,13 @@ function TimeframeCard({
 }) {
   if (!data) {
     return (
-      <div className="rounded-2xl border border-slate-800 bg-slate-950/80 px-4 py-3 text-sm shadow-[0_0_20px_rgba(15,23,42,0.9)]">
-        <div className="text-xs text-slate-400 mb-1">{label}</div>
-        <div className="text-xs text-slate-500">No data</div>
+      <div className="relative rounded-2xl border border-slate-800 bg-slate-950/80 px-4 py-3 text-sm shadow-[0_0_20px_rgba(15,23,42,0.9)] overflow-hidden">
+        {/* subtle glow on hover */}
+        <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.18),transparent_55%),radial-gradient(circle_at_bottom,_rgba(251,191,36,0.14),transparent_55%)]" />
+        <div className="relative">
+          <div className="text-xs text-slate-400 mb-1">{label}</div>
+          <div className="text-xs text-slate-500">No data</div>
+        </div>
       </div>
     );
   }
@@ -898,28 +1046,66 @@ function TimeframeCard({
 
   return (
     <div
-      className={`rounded-2xl border px-4 py-3 text-sm shadow-[0_0_26px_rgba(15,23,42,0.9)] ${
-        highlight
-          ? "border-emerald-400/70 bg-gradient-to-br from-emerald-500/15 via-slate-950/90 to-emerald-400/10"
-          : "border-slate-800 bg-slate-950/80"
-      }`}
+      className={`
+        group relative overflow-hidden
+        rounded-2xl border px-4 py-3 text-sm
+        shadow-[0_0_26px_rgba(15,23,42,0.9)]
+        transition-all duration-300 ease-out
+        hover:-translate-y-1 hover:-rotate-1
+        hover:shadow-[0_20px_45px_rgba(15,23,42,0.9)]
+        ${
+          highlight
+            ? "border-emerald-400/70 bg-gradient-to-br from-emerald-500/15 via-slate-950/90 to-emerald-400/10"
+            : "border-slate-800 bg-slate-950/80 hover:border-sky-500/70"
+        }
+      `}
+      style={{ transformOrigin: "center center" }}
     >
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs text-slate-400">{label}</span>
-        {data.page && (
-          <span className="text-[10px] text-slate-500">page {data.page}</span>
-        )}
-      </div>
+      {/* Glow overlay on hover */}
+      <div
+        className={`
+          pointer-events-none absolute inset-0 rounded-2xl
+          opacity-0 group-hover:opacity-100
+          transition-opacity duration-300
+          bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.25),transparent_55%),radial-gradient(circle_at_bottom,_rgba(251,191,36,0.18),transparent_55%)]
+        `}
+      />
 
-      <div className="flex items-baseline justify-between">
-        <div>
-          <div className="text-[11px] text-slate-400">Rank</div>
-          <div className="text-xl font-bold">{rankText}</div>
+      {/* subtle inner border */}
+      <div className="pointer-events-none absolute inset-[1px] rounded-[17px] border border-white/5" />
+
+      {/* content */}
+      <div className="relative">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+            {label}
+          </span>
+          {data.page && (
+            <span className="text-[10px] text-slate-500">
+              page {data.page}
+            </span>
+          )}
         </div>
-        <div className="text-right">
-          <div className="text-[11px] text-slate-400">Mindshare</div>
-          <div className="text-sm font-medium">{ms}</div>
+
+        <div className="flex items-baseline justify-between">
+          <div>
+            <div className="text-[11px] text-slate-400 mb-0.5">Rank</div>
+            <div className="text-2xl font-bold tracking-tight">
+              {rankText}
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-[11px] text-slate-400 mb-0.5">
+              Mindshare
+            </div>
+            <div className="text-sm font-semibold text-slate-100">
+              {ms}
+            </div>
+          </div>
         </div>
+
+        {/* tiny bottom accent line */}
+        <div className="mt-3 h-px w-full bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
     </div>
   );
