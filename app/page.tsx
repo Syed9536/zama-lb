@@ -165,7 +165,9 @@ export default function HomePage() {
           // 🔊 sound play
           if (winSound.current) {
             winSound.current.currentTime = 0;
-            winSound.current.play().catch(() => {});
+            winSound.current.play().catch(() => {
+              // browser block kare to ignore
+            });
           }
 
           // 🎉 Confetti trigger
@@ -180,6 +182,7 @@ export default function HomePage() {
             setShowConfetti(false);
           }, 10000);
         }
+        // agar rank hi nahi mila: no sound + no confetti
       }
     } catch (err) {
       console.error(err);
@@ -234,52 +237,34 @@ export default function HomePage() {
     : null;
 
   // ✅ Share button sirf tab dikhana jab kisi timeframe me rank mila ho
-  const hasAnyRankToShare = Boolean(
-    (data?.["24h"]?.rank && data["24h"]!.rank! > 0) ||
-      (data?.["7d"]?.rank && data["7d"]!.rank! > 0) ||
-      (data?.["30d"]?.rank && data["30d"]!.rank! > 0),
-  );
+  const hasAnyRankToShare =
+    (data?.["24h"]?.rank != null && (data["24h"]!.rank as number) > 0) ||
+    (data?.["7d"]?.rank != null && (data["7d"]!.rank as number) > 0) ||
+    (data?.["30d"]?.rank != null && (data["30d"]!.rank as number) > 0);
 
-  // ✅ Simple Share-on-X: text + promo + website link
+    // 🔵 Share on X – fixed promo text
   const handleShare = () => {
-    if (!data || !hasAnyRankToShare) return;
+    // optional: agar data hi nahi hai to kuch mat karo
+    if (!data) return;
 
-    const r24 = data["24h"]?.rank ?? null;
-    const r7 = data["7d"]?.rank ?? null;
-    const r30 = data["30d"]?.rank ?? null;
+    const siteUrl = "https://zama-rank-next.vercel.app/";
 
-    const ranks = [r24, r7, r30].filter(
-      (r) => typeof r === "number" && r > 0,
-    ) as number[];
-
-    const best = ranks.length ? Math.min(...ranks) : null;
-
-    const handle =
-      (data.username || username || "").replace(/^@/, "") || "unknown";
-
-    const baseUrl =
-      process.env.NEXT_PUBLIC_BASE_URL ?? window.location.origin;
-    const siteUrl = baseUrl; // tumhari main website link
-
-    const lines = [
-      "🚀 Zama All SZN Rank (Unofficial)",
-      `Handle: @${handle}`,
-      best ? `Best rank this season: #${best}` : undefined,
+    const text = [
+      `Just checked my Zama SZN 5 Rank on ${siteUrl} 🚀`,
       "",
-      "Check your Zama creator rank 👇",
+      "The UI is absolutely fire. Huge shoutout to @0xSyeds for building this beast for the community! 🔥🫡",
       "",
-      "Built by @0xSyeds – unofficial dashboard for the Zama Creator Program.",
-    ].filter(Boolean) as string[];
+      "Check your rank now 👇",
+      "",
+      siteUrl,
+    ].join("\n");
 
-    const text = lines.join("\n");
+    const url = new URL("https://x.com/intent/post");
+    url.searchParams.set("text", text);
 
-    const shareUrl = new URL("https://x.com/intent/post");
-    shareUrl.searchParams.set("text", text);
-    // Link tweet ke end me attach hoga
-    shareUrl.searchParams.set("url", siteUrl);
-
-    window.open(shareUrl.toString(), "_blank", "noopener,noreferrer");
+    window.open(url.toString(), "_blank", "noopener,noreferrer");
   };
+
 
   return (
     <main className="relative min-h-screen bg-[#020617] text-slate-50 overflow-hidden">
@@ -334,11 +319,15 @@ export default function HomePage() {
             className="
     inline-flex items-center gap-1 rounded-full
     px-3 py-1 text-xs font-medium
+
+    /* STATIC CYBERPUNK GLOW */
     border border-[#ff2cdf]/60
     bg-[#ff2cdf]/15
     shadow-[0_0_18px_rgba(255,44,223,0.65)]
     backdrop-blur-xl
     text-[#ffbdf7]
+
+    /* HOVER: EXTREME NEON BLAST */
     transition-all duration-300
     hover:shadow-[0_0_30px_rgba(255,44,223,1)]
     hover:border-[#ff2cdf]
@@ -363,11 +352,15 @@ export default function HomePage() {
             className="
     inline-flex items-center gap-1 rounded-full
     px-3 py-1 text-[11px] font-medium
+
+    /* STATIC YELLOW GLOW */
     border border-[#fdfd96]/60
     bg-[#fdfd96]/15
     shadow-[0_0_18px_rgba(253,253,150,0.65)]
     backdrop-blur-xl
     text-[#fffbe0]
+
+    /* HOVER: SUPER BRIGHT GOLD GLOW */
     transition-all duration-300
     hover:shadow-[0_0_30px_rgba(253,253,150,1)]
     hover:border-[#fdfd96]
@@ -405,9 +398,10 @@ export default function HomePage() {
             hover:-translate-y-1
           "
         >
-          {/* Bird */}
+          {/* 🕊️ ORIGINAL BIRD PLAYGROUND */}
           <span className="bird-area">
             <div className="bird-wrapper-path">
+              {/* Original Bird Image */}
               <img
                 src="/bird.png"
                 alt="Flying bird"
@@ -458,7 +452,7 @@ export default function HomePage() {
               {/* search bar + 3D pill button */}
               <div className="flex flex-col sm:flex-row gap-3 mb-1">
                 <div className="flex-1 rounded-full bg-slate-900/80 border border-slate-700/80 px-4 py-2.5 flex items-center gap-3 shadow-[0_18px_40px_rgba(15,23,42,0.9)_inset]">
-                  {/* LABEL */}
+                  {/* LABEL: Text X replaced with Logo */}
                   <span className="hidden md:inline-flex items-center gap-2 select-none">
                     <Image
                       src="/x-logo.svg"
@@ -481,7 +475,7 @@ export default function HomePage() {
                   />
                 </div>
 
-                {/* SEARCH BUTTON */}
+                {/* 🔥 UPDATED PREMIUM 3D CYBERPUNK BUTTON WITH EMOJI BURST */}
                 <button
                   onClick={handleCheck}
                   disabled={loading}
@@ -502,7 +496,7 @@ export default function HomePage() {
                   {/* SHINE EFFECT */}
                   <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1s_infinite] bg-gradient-to-r from-transparent via-white/60 to-transparent z-10" />
 
-                  {/* EMOJI BURST */}
+                  {/* === EMOJI BURST PARTICLES CONTAINER (z-15) === */}
                   {isButtonBursting && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-15">
                       {burstParticlesData.map((p) => (
@@ -526,7 +520,7 @@ export default function HomePage() {
                     </div>
                   )}
 
-                  {/* BUTTON TEXT */}
+                  {/* BUTTON TEXT & ICON (z-20) */}
                   <span className="relative z-20 flex items-center gap-2">
                     {loading ? (
                       <>
@@ -776,7 +770,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* FEATURES GRID */}
+          {/* === NEW: FEATURES GRID (Filling the empty space) === */}
           <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
             {/* Feature 1 */}
             <div className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/40 p-6 backdrop-blur-sm transition-all hover:bg-slate-900/60 hover:border-slate-700 hover:-translate-y-1">
@@ -830,7 +824,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* FOOTER */}
+          {/* === NEW: LIVE SYSTEM STATUS FOOTER === */}
           <div className="mt-12 border-t border-slate-800/50 pt-8 pb-10">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               {/* Status Indicators */}
