@@ -242,9 +242,8 @@ export default function HomePage() {
     (data?.["7d"]?.rank != null && (data["7d"]!.rank as number) > 0) ||
     (data?.["30d"]?.rank != null && (data["30d"]!.rank as number) > 0);
 
-    // 🔵 Share on X – fixed promo text
+  // 🔵 Share on X – fixed promo text
   const handleShare = () => {
-    // optional: agar data hi nahi hai to kuch mat karo
     if (!data) return;
 
     const siteUrl = "https://zama-lb.vercel.app/";
@@ -264,7 +263,6 @@ export default function HomePage() {
 
     window.open(url.toString(), "_blank", "noopener,noreferrer");
   };
-
 
   return (
     <main className="relative min-h-screen bg-[#020617] text-slate-50 overflow-hidden">
@@ -491,6 +489,7 @@ export default function HomePage() {
                     hover:bg-right hover:scale-105 hover:shadow-[0_0_50px_rgba(251,191,36,0.8),inset_0_0_10px_rgba(255,255,255,0.5)]
                     active:scale-95
                     disabled:opacity-50 disabled:cursor-not-allowed
+                    cursor-pointer
                   "
                 >
                   {/* SHINE EFFECT */}
@@ -580,6 +579,7 @@ export default function HomePage() {
       text-sky-300
       hover:bg-sky-500/20 hover:border-sky-400 hover:text-white
       transition-all
+      cursor-pointer
     "
                           >
                             <Share2 className="w-3 h-3" />
