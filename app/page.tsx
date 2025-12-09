@@ -814,7 +814,7 @@ export default function HomePage() {
                               Season 1–4 • Ended
                             </div>
                             <div className="text-[10px] text-slate-500">
-                              Archived rankings from early Zama seasons. Rewards already distributed.
+                              Archived rankings from early Zama seasons. Rewards To be Distributed.
                             </div>
                           </div>
                           <div className="flex items-center gap-2 text-[10px] text-slate-500">
