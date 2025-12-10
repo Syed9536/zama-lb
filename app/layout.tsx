@@ -24,11 +24,16 @@ export const metadata: Metadata = {
 };
 
 /**
- * Yahi toggle hai:
- *  true  = poori site UNDER MAINTENANCE
- *  false = normal site
+ * Maintenance logic:
+ *
+ * - Localhost pe VERCEL_ENV set nahi hota ⇒ yaha hamesha false rahega
+ * - Vercel production pe:
+ *     MAINTENANCE_MODE = "1"  → maintenance ON
+ *     MAINTENANCE_MODE ≠ "1" → normal site
  */
-const IS_MAINTENANCE = true; // <- jab update complete ho jaye to isko false kar dena
+const IS_MAINTENANCE =
+  process.env.VERCEL_ENV === "production" &&
+  process.env.MAINTENANCE_MODE === "1";
 
 export default function RootLayout({
   children,
@@ -49,12 +54,13 @@ export default function RootLayout({
 function MaintenancePage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-black text-white">
-      <div className="text-center space-y-3">
-        <div className="text-red-400 font-bold text-sm">
+      <div className="text-center space-y-3 px-4">
+        <div className="text-red-400 font-bold text-sm tracking-[0.25em] uppercase">
           🚧 Under Maintenance
         </div>
         <p className="text-slate-300 text-sm">
-          We&apos;re updating the Zama All SZN Rank dashboard.  
+          We&apos;re updating the Zama All SZN Rank dashboard.
+          <br />
           Please check back in a bit. 🛠️
         </p>
       </div>
