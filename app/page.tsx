@@ -238,11 +238,11 @@ export default function HomePage() {
   const normalizedUsername = (data?.username || "").replace(/^@/, "");
   const history = data?.history ?? [];
 
-  // create a display label with NO spaces (user requested)
+  // ✅ FIXED: Sirf 'username' use kar rahe hain taaki Handle (@ wala) mile, Name nahi.
   const displayLabelNoSpaces = (
-    (data?.["30d"]?.displayName ||
-      data?.["7d"]?.displayName ||
-      data?.["24h"]?.displayName ||
+    (data?.["30d"]?.username ||
+      data?.["7d"]?.username ||
+      data?.["24h"]?.username ||
       data?.username) ??
     username
   ).toString().replace(/\s+/g, "");
