@@ -98,6 +98,37 @@ export default function HomePage() {
   const [status, setStatus] = useState<string | null>(null);
   const [data, setData] = useState<ApiData | null>(null);
 
+  // === RECENT SEARCHES FEATURE (added) ===
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [inputFocused, setInputFocused] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = localStorage.getItem("recentUsernames");
+    if (saved) {
+      try {
+        setRecentSearches(JSON.parse(saved));
+      } catch {
+        // ignore parse errors
+      }
+    }
+  }, []);
+
+  const saveRecentSearch = (name: string) => {
+    if (!name) return;
+    const clean = name.replace(/^@/, "").trim();
+    setRecentSearches((prev) => {
+      const updated = [clean, ...prev.filter((u) => u !== clean)].slice(0, 5);
+      try {
+        localStorage.setItem("recentUsernames", JSON.stringify(updated));
+      } catch {
+        // ignore storage errors
+      }
+      return updated;
+    });
+  };
+  // === end recent searches ===
+
   // === CONFETTI STATES ===
   const [showConfetti, setShowConfetti] = useState(false);
   const [recycleConfetti, setRecycleConfetti] = useState(true); // Control flow
@@ -114,15 +145,17 @@ export default function HomePage() {
     winSound.current = new Audio("/winner.wav"); // public/winner.wav
   }, []);
 
-  const handleCheck = async () => {
+  const handleCheck = async (overrideName?: string) => {
+    // allow optional override when calling from recent-button
+    const useName = (overrideName ?? username).trim();
+
     // Button Burst
     setIsButtonBursting(true);
     setTimeout(() => {
       setIsButtonBursting(false);
     }, 800);
 
-    const trimmed = username.trim();
-    if (!trimmed) {
+    if (!useName) {
       setStatus("Enter Your X Username First.");
       return;
     }
@@ -138,7 +171,7 @@ export default function HomePage() {
     try {
       const res = await fetch(
         `/api/find-rank?username=${encodeURIComponent(
-          trimmed.replace(/^@/, ""),
+          useName.replace(/^@/, ""),
         )}`,
       );
       const json: ApiData = await res.json();
@@ -148,6 +181,9 @@ export default function HomePage() {
       } else {
         setStatus("Found ✔");
         setData(json);
+
+        // save to recent searches (added)
+        saveRecentSearch(useName);
 
         // ✅ Check: kisi bhi timeframe ya history me rank mila?
         const hasRankS5 =
@@ -477,12 +513,17 @@ export default function HomePage() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleCheck()}
+                    onFocus={() => setInputFocused(true)}
+                    onBlur={() =>
+                      // small delay so clicks on recent items register before hiding
+                      setTimeout(() => setInputFocused(false), 150)
+                    }
                   />
                 </div>
 
                 {/* 🔥 UPDATED PREMIUM 3D CYBERPUNK BUTTON WITH EMOJI BURST */}
                 <button
-                  onClick={handleCheck}
+                  onClick={() => handleCheck()}
                   disabled={loading}
                   className="
                     group relative overflow-hidden rounded-full
@@ -556,6 +597,34 @@ export default function HomePage() {
                   </span>
                 </button>
               </div>
+
+              {/* RECENT SEARCHES: show BELOW input only when input focused */}
+              {inputFocused && recentSearches.length > 0 && (
+                <div className="mt-1 flex flex-wrap gap-2 text-[11px] px-2">
+                  <span className="text-slate-500 self-center">Recent:</span>
+                  {recentSearches.map((u) => (
+                    <button
+                      key={u}
+                      onMouseDown={(e) => {
+                        // useMouseDown so blur doesn't hide before click registers
+                        e.preventDefault();
+                        setUsername(u);
+                        // call search with override immediately
+                        handleCheck(u);
+                      }}
+                      className="
+                        px-2 py-0.5 rounded-full 
+                        text-slate-300 bg-slate-800/50 
+                        border border-slate-700 
+                        hover:bg-slate-700 hover:text-white 
+                        transition-all
+                      "
+                    >
+                      @{u}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {status && (
                 <p className="text-[11px] text-slate-400 flex items-center gap-1">
