@@ -98,37 +98,6 @@ export default function HomePage() {
   const [status, setStatus] = useState<string | null>(null);
   const [data, setData] = useState<ApiData | null>(null);
 
-  // === RECENT SEARCHES FEATURE (added) ===
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [inputFocused, setInputFocused] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const saved = localStorage.getItem("recentUsernames");
-    if (saved) {
-      try {
-        setRecentSearches(JSON.parse(saved));
-      } catch {
-        // ignore parse errors
-      }
-    }
-  }, []);
-
-  const saveRecentSearch = (name: string) => {
-    if (!name) return;
-    const clean = name.replace(/^@/, "").trim();
-    setRecentSearches((prev) => {
-      const updated = [clean, ...prev.filter((u) => u !== clean)].slice(0, 5);
-      try {
-        localStorage.setItem("recentUsernames", JSON.stringify(updated));
-      } catch {
-        // ignore storage errors
-      }
-      return updated;
-    });
-  };
-  // === end recent searches ===
-
   // === CONFETTI STATES ===
   const [showConfetti, setShowConfetti] = useState(false);
   const [recycleConfetti, setRecycleConfetti] = useState(true); // Control flow
@@ -140,14 +109,45 @@ export default function HomePage() {
   // 🔊 WIN SOUND
   const winSound = useRef<HTMLAudioElement | null>(null);
 
+  // --- RECENT SEARCHES ---
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  // No complex dropdown logic needed, just chips below input
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     winSound.current = new Audio("/winner.wav"); // public/winner.wav
+
+    // load recent searches
+    try {
+      const saved = localStorage.getItem("recentUsernames");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) setRecentSearches(parsed);
+      }
+    } catch (e) {
+      // ignore
+    }
   }, []);
 
-  const handleCheck = async (overrideName?: string) => {
-    // allow optional override when calling from recent-button
-    const useName = (overrideName ?? username).trim();
+  const saveRecentSearch = (rawName: string) => {
+    try {
+      const clean = rawName.replace(/^@/, "").trim();
+      if (!clean) return;
+      const updated = [clean, ...recentSearches.filter((u) => u !== clean)].slice(0, 5);
+      setRecentSearches(updated);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("recentUsernames", JSON.stringify(updated));
+      }
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  const handleCheck = async (fromRecent?: string) => {
+    const queryUser = fromRecent || username;
+    if (fromRecent) {
+      setUsername(fromRecent);
+    }
 
     // Button Burst
     setIsButtonBursting(true);
@@ -155,7 +155,8 @@ export default function HomePage() {
       setIsButtonBursting(false);
     }, 800);
 
-    if (!useName) {
+    const trimmed = queryUser.trim();
+    if (!trimmed) {
       setStatus("Enter Your X Username First.");
       return;
     }
@@ -171,7 +172,7 @@ export default function HomePage() {
     try {
       const res = await fetch(
         `/api/find-rank?username=${encodeURIComponent(
-          useName.replace(/^@/, ""),
+          trimmed.replace(/^@/, ""),
         )}`,
       );
       const json: ApiData = await res.json();
@@ -182,8 +183,8 @@ export default function HomePage() {
         setStatus("Found ✔");
         setData(json);
 
-        // save to recent searches (added)
-        saveRecentSearch(useName);
+        // save recent (use clean username)
+        saveRecentSearch(trimmed.replace(/^@/, ""));
 
         // ✅ Check: kisi bhi timeframe ya history me rank mila?
         const hasRankS5 =
@@ -236,6 +237,15 @@ export default function HomePage() {
 
   const normalizedUsername = (data?.username || "").replace(/^@/, "");
   const history = data?.history ?? [];
+
+  // create a display label with NO spaces (user requested)
+  const displayLabelNoSpaces = (
+    (data?.["30d"]?.displayName ||
+      data?.["7d"]?.displayName ||
+      data?.["24h"]?.displayName ||
+      data?.username) ??
+    username
+  ).toString().replace(/\s+/g, "");
 
   // --- Prize calculations ---
 
@@ -473,7 +483,8 @@ export default function HomePage() {
       <div className="relative z-10 flex items-center justify-center px-4 pb-16 pt-6 md:pt-10">
         <div className="w-full max-w-4xl">
           {/* Main Search Card */}
-          <div className="relative rounded-[32px] border border-slate-800/80 bg-gradient-to-br from-slate-950/90 via-slate-900/90 to-slate-950/90 px-5 py-6 shadow-[0_0_60px_rgba(15,23,42,0.9)] overflow-hidden">
+          {/* ✅ FIXED: Removed fixed height, adjusted bottom padding for balance */}
+          <div className="relative rounded-[32px] border border-slate-800/80 bg-gradient-to-br from-slate-950/90 via-slate-900/90 to-slate-950/90 px-5 py-6 shadow-[0_0_60px_rgba(15,23,42,0.9)] overflow-hidden pb-10">
             {/* neon border glow */}
             <div className="pointer-events-none absolute inset-0 rounded-[32px] border border-amber-400/10 shadow-[0_0_45px_rgba(251,191,36,0.25)]" />
 
@@ -491,140 +502,131 @@ export default function HomePage() {
               </div>
 
               {/* search bar + 3D pill button */}
-              <div className="flex flex-col sm:flex-row gap-3 mb-1">
-                <div className="flex-1 rounded-full bg-slate-900/80 border border-slate-700/80 px-4 py-2.5 flex items-center gap-3 shadow-[0_18px_40px_rgba(15,23,42,0.9)_inset]">
-                  {/* LABEL: Text X replaced with Logo */}
-                  <span className="hidden md:inline-flex items-center gap-2 select-none">
-                    <Image
-                      src="/x-logo.svg"
-                      alt="X"
-                      width={11}
-                      height={11}
-                      className="opacity-50"
-                    />
-                    <span className="text-[11px] uppercase tracking-[0.25em] text-slate-500 font-medium">
-                      HANDLE
+              <div className="flex flex-col gap-3 mb-1">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex-1 rounded-full bg-slate-900/80 border border-slate-700/80 px-4 py-2.5 flex items-center gap-3 shadow-[0_18px_40px_rgba(15,23,42,0.9)_inset]">
+                    {/* LABEL: Text X replaced with Logo */}
+                    <span className="hidden md:inline-flex items-center gap-2 select-none">
+                      <Image
+                        src="/x-logo.svg"
+                        alt="X"
+                        width={11}
+                        height={11}
+                        className="opacity-50"
+                      />
+                      <span className="text-[11px] uppercase tracking-[0.25em] text-slate-500 font-medium">
+                        HANDLE
+                      </span>
                     </span>
-                  </span>
 
-                  <input
-                    className="flex-1 bg-transparent outline-none text-sm placeholder:text-slate-600"
-                    placeholder="@0xSyeds"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleCheck()}
-                    onFocus={() => setInputFocused(true)}
-                    onBlur={() =>
-                      // small delay so clicks on recent items register before hiding
-                      setTimeout(() => setInputFocused(false), 150)
-                    }
-                  />
-                </div>
+                    <input
+                      className="flex-1 bg-transparent outline-none text-sm placeholder:text-slate-600"
+                      placeholder="@0xSyeds"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleCheck()}
+                    />
+                  </div>
 
-                {/* 🔥 UPDATED PREMIUM 3D CYBERPUNK BUTTON WITH EMOJI BURST */}
-                <button
-                  onClick={() => handleCheck()}
-                  disabled={loading}
-                  className="
-                    group relative overflow-hidden rounded-full
-                    bg-gradient-to-r from-amber-300 via-orange-400 to-amber-300
-                    bg-[length:200%_auto]
-                    px-12 py-3.5
-                    font-bold text-slate-950 text-sm tracking-[0.1em] uppercase
-                    shadow-[0_0_20px_rgba(251,191,36,0.5)]
-                    border border-amber-200/50
-                    transition-all duration-500 ease-out
-                    hover:bg-right hover:scale-105 hover:shadow-[0_0_50px_rgba(251,191,36,0.8),inset_0_0_10px_rgba(255,255,255,0.5)]
-                    active:scale-95
-                    disabled:opacity-50 disabled:cursor-not-allowed
-                    cursor-pointer
-                  "
-                >
-                  {/* SHINE EFFECT */}
-                  <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1s_infinite] bg-gradient-to-r from-transparent via-white/60 to-transparent z-10" />
+                  {/* 🔥 UPDATED PREMIUM 3D CYBERPUNK BUTTON WITH EMOJI BURST */}
+                  <button
+                    onClick={() => handleCheck()}
+                    disabled={loading}
+                    className="
+                      group relative overflow-hidden rounded-full
+                      bg-gradient-to-r from-amber-300 via-orange-400 to-amber-300
+                      bg-[length:200%_auto]
+                      px-12 py-3.5
+                      font-bold text-slate-950 text-sm tracking-[0.1em] uppercase
+                      shadow-[0_0_20px_rgba(251,191,36,0.5)]
+                      border border-amber-200/50
+                      transition-all duration-500 ease-out
+                      hover:bg-right hover:scale-105 hover:shadow-[0_0_50px_rgba(251,191,36,0.8),inset_0_0_10px_rgba(255,255,255,0.5)]
+                      active:scale-95
+                      disabled:opacity-50 disabled:cursor-not-allowed
+                      cursor-pointer
+                    "
+                  >
+                    {/* SHINE EFFECT */}
+                    <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1s_infinite] bg-gradient-to-r from-transparent via-white/60 to-transparent z-10" />
 
-                  {/* === EMOJI BURST PARTICLES CONTAINER (z-15) === */}
-                  {isButtonBursting && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-15">
-                      {burstParticlesData.map((p) => (
-                        <span
-                          key={p.id}
-                          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 animate-[emoji-burst_0.8s_ease-out_forwards] select-none"
-                          style={
-                            {
-                              "--tx": `${p.tx}px`,
-                              "--ty": `${p.ty}px`,
-                              "--rot": `${p.rot}deg`,
-                              "--size": p.size,
-                              animationDelay: `${p.delay}s`,
-                              fontSize: "20px",
-                            } as React.CSSProperties
-                          }
-                        >
-                          🔍
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* BUTTON TEXT & ICON (z-20) */}
-                  <span className="relative z-20 flex items-center gap-2">
-                    {loading ? (
-                      <>
-                        <span className="animate-spin text-lg">⟳</span>{" "}
-                        PROCESSING...
-                      </>
-                    ) : (
-                      <>
-                        SEARCH
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="3"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="w-4 h-4 opacity-70 group-hover:translate-x-1 transition-transform"
-                        >
-                          <path d="M5 12h14" />
-                          <path d="m12 5 7 7-7 7" />
-                        </svg>
-                      </>
+                    {/* === EMOJI BURST PARTICLES CONTAINER (z-15) === */}
+                    {isButtonBursting && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-15">
+                        {burstParticlesData.map((p) => (
+                          <span
+                            key={p.id}
+                            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 animate-[emoji-burst_0.8s_ease-out_forwards] select-none"
+                            style={
+                              {
+                                "--tx": `${p.tx}px`,
+                                "--ty": `${p.ty}px`,
+                                "--rot": `${p.rot}deg`,
+                                "--size": p.size,
+                                animationDelay: `${p.delay}s`,
+                                fontSize: "20px",
+                              } as React.CSSProperties
+                            }
+                          >
+                            🔍
+                          </span>
+                        ))}
+                      </div>
                     )}
-                  </span>
-                </button>
-              </div>
 
-              {/* RECENT SEARCHES: show BELOW input only when input focused */}
-              {inputFocused && recentSearches.length > 0 && (
-                <div className="mt-1 flex flex-wrap gap-2 text-[11px] px-2">
-                  <span className="text-slate-500 self-center">Recent:</span>
-                  {recentSearches.map((u) => (
-                    <button
-                      key={u}
-                      onMouseDown={(e) => {
-                        // useMouseDown so blur doesn't hide before click registers
-                        e.preventDefault();
-                        setUsername(u);
-                        // call search with override immediately
-                        handleCheck(u);
-                      }}
-                      className="
-                        px-2 py-0.5 rounded-full 
-                        text-slate-300 bg-slate-800/50 
-                        border border-slate-700 
-                        hover:bg-slate-700 hover:text-white 
-                        transition-all
-                      "
-                    >
-                      @{u}
-                    </button>
-                  ))}
+                    {/* BUTTON TEXT & ICON (z-20) */}
+                    <span className="relative z-20 flex items-center gap-2">
+                      {loading ? (
+                        <>
+                          <span className="animate-spin text-lg">⟳</span>{" "}
+                          PROCESSING...
+                        </>
+                      ) : (
+                        <>
+                          SEARCH
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="w-4 h-4 opacity-70 group-hover:translate-x-1 transition-transform"
+                          >
+                            <path d="M5 12h14" />
+                            <path d="m12 5 7 7-7 7" />
+                          </svg>
+                        </>
+                      )}
+                    </span>
+                  </button>
                 </div>
-              )}
+
+                {/* RECENT SEARCH CHIPS (BELOW SEARCH BAR) */}
+                {recentSearches.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-2 mt-1 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <span className="text-[10px] text-slate-500 uppercase tracking-widest mr-1">
+                      Recent:
+                    </span>
+                    {recentSearches.map((u) => (
+                      <button
+                        key={u}
+                        onClick={() => handleCheck(u)}
+                        className="
+                          px-2.5 py-1 rounded-md border border-slate-800 bg-slate-900/60 
+                          text-[11px] text-slate-400 hover:text-cyan-300 hover:border-cyan-500/40 
+                          transition-colors cursor-pointer
+                        "
+                      >
+                        @{u}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               {status && (
                 <p className="text-[11px] text-slate-400 flex items-center gap-1">
@@ -643,7 +645,8 @@ export default function HomePage() {
                         Username
                       </div>
                       <div className="text-lg font-semibold flex items-center gap-2">
-                        {label || username}
+                        {/* SHOW username WITHOUT SPACES */}
+                        {displayLabelNoSpaces || username}
                         {normalizedUsername && hasAnyRankToShare && (
                           <button
                             type="button"
