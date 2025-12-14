@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import seasons from "@/data/seasons.json";
 
+// 👇 TERA COOKIE YAHAN ADD KAR DIYA HAI
+const MY_COOKIE = "__Host-authjs.csrf-token=358f4a65707003a0d62310e7b3591e0a4b0162ee7842da9ebf15b56989159ef2%7Cf40d0624bbe3f5823433aa98c3f71790c60f505e7b7ee32aa7fb647853e60ce3; __Secure-authjs.callback-url=https%3A%2F%2Fwww.cookie.fun%2Ftokens%2Fzama; cf_clearance=uLfgHZ325_DZSD3RvBBCwE1CQRjTnq4Dg4coLTIL3r0-1765688185-1.2.1.1-w6vojytx8xkVv8rdW1btxo021Hn8abx8Mwl5AhXhvA26_xjp3.lIoQ41YN7Aam1KcsxuowmP5pwvzuzLdMejGbidURNYOqymOFDlKN3nEbdBPe8esCY3KX2GV45mrAmzREzl2v5m9M2J4sO32ztKbC3gcm7ZkEeHS.6HbaBFGY8GABbTqM.t6lYOuZ4SaFDlEktTDMqGxSFKLhiKXc05v2J192rJsTByc42R7vNPswU9H2GSU6bPnriJnMmr_l2a";
+
 // ---------- LIVE S5 SEARCH (Cookie.fun) ----------
 async function searchUser(username: string, timeframe: string): Promise<any> {
   const u = username.toLowerCase();
@@ -10,12 +13,10 @@ async function searchUser(username: string, timeframe: string): Promise<any> {
   if (timeframe === "7d") dataPoint = "_7DaysAgo";
   if (timeframe === "30d") dataPoint = "_30DaysAgo"; 
 
-  // 2. Exact Input Object (Matches Cookie.fun's new structure)
+  // 2. Exact Input Object
   const inputObj = {
     json: {
-      projectsFilter: { 
-        searchFilter: "zama" // Ye Zama project ke liye filter hai
-      },
+      projectsFilter: { searchFilter: "zama" },
       orderColumn: "TwitterMindshare",
       orderDataPoint: dataPoint,
       orderByAscending: false,
@@ -31,18 +32,18 @@ async function searchUser(username: string, timeframe: string): Promise<any> {
     const res = await fetch(url, { 
         cache: "no-store",
         headers: {
-            // ✅ IMPORTANT HEADERS TO BYPASS CLOUDFLARE
+            // ✅ HEADERS MEIN TERA COOKIE USE HO RAHA HAI
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
             "Referer": "https://www.cookie.fun/tokens/zama",
             "Origin": "https://www.cookie.fun",
-            "x-trpc-source": "nextjs-react", // Ye header bahut zaroori hai
-            "Accept": "application/json",
+            "Cookie": MY_COOKIE, 
+            "x-trpc-source": "nextjs-react",
             "Content-Type": "application/json"
         }
     });
 
     if (!res.ok) {
-        console.log(`❌ Cookie API Error (${timeframe}): ${res.status} ${res.statusText}`);
+        console.error(`❌ Cookie API Error (${timeframe}): ${res.status}`);
         return { timeframe, found: false };
     }
 
@@ -55,7 +56,6 @@ async function searchUser(username: string, timeframe: string): Promise<any> {
     for (let i = 0; i < list.length; i++) {
       const row = list[i];
       
-      // Handle array vs string
       let twitterHandle = "";
       if (Array.isArray(row.twitterUsernames)) {
         twitterHandle = row.twitterUsernames[0]?.toLowerCase() || "";
@@ -68,7 +68,6 @@ async function searchUser(username: string, timeframe: string): Promise<any> {
       // Check match
       if (twitterHandle === u || name === u || name.includes(u)) {
         
-        // Mindshare Extraction
         let msValue = 0;
         if (row[dataPoint] && typeof row[dataPoint].mindshare !== 'undefined') {
             msValue = row[dataPoint].mindshare;
@@ -93,7 +92,7 @@ async function searchUser(username: string, timeframe: string): Promise<any> {
   return { timeframe, found: false };
 }
 
-// ---------- S1–S4 HISTORY LOOKUP (Wahi Purana) ----------
+// ---------- S1–S4 HISTORY LOOKUP (Unchanged) ----------
 function getSeasonHistory(username: string): any[] {
   const clean = username.toLowerCase().replace("@", "");
   const SEASONS = ["S1", "S2", "S3", "S4"];
@@ -123,7 +122,7 @@ export async function GET(req: NextRequest) {
   }
 
   const clean = username.trim().replace(/^@/, "");
-  // Check all timeframes
+  // Sirf 24h aur 7d check karte hain, 30d option optional rakhte hain
   const TIMEFRAMES = ["24h", "7d", "30d"];
 
   try {
